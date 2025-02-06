@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import os
+import docx
 
 app = Flask(__name__)
 
@@ -21,15 +22,6 @@ def calcul():
     max_pages = max(1, round(max_tokens / tokens_per_page))
 
     return jsonify({"max_pages": max_pages})
-import docx
-from flask import Flask, request, jsonify
-
-app = Flask(__name__)
-
-@app.route('/calcul', methods=['GET'])
-def getMaxPages():
-    # Code existant pour calculer le nombre de pages
-    return jsonify({"max_pages": 42})  # Exemple
 
 def extract_problematic(doc_path):
     """
@@ -67,9 +59,7 @@ def detect_problematic():
 
     return jsonify(response)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# ✅ Garde UNE SEULE commande pour exécuter Flask, propre et compatible avec Render
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5001))  # On force Flask à utiliser le port 5001
+    port = int(os.environ.get("PORT", 5000))  # Port standard (5000 au lieu de 5001 pour Render)
     app.run(host="0.0.0.0", port=port)
-
