@@ -39,7 +39,6 @@ def extract_problematic(doc_path):
             text = para.text.strip()
             text_content.append(text)
 
-            # Vérifie si le paragraphe contient un mot-clé lié à la problématique
             for keyword in keywords:
                 if keyword.lower() in text.lower():
                     found_problematic = text
@@ -90,7 +89,6 @@ def extract_sections(doc_path):
         for para in doc.paragraphs:
             text = para.text.strip().lower()
 
-            # Vérifier si le paragraphe marque une nouvelle section
             if "méthodologie" in text or "méthode" in text:
                 current_section = "Méthodologie"
             elif "résultats" in text or "analyse" in text or "observations" in text:
@@ -98,11 +96,9 @@ def extract_sections(doc_path):
             elif "conclusion" in text or "discussion" in text:
                 current_section = "Conclusion"
 
-            # Ajouter le texte dans la bonne section
             if current_section and len(text) > 20:  # Filtrer les lignes trop courtes
                 sections[current_section].append(para.text.strip())
 
-        # Nettoyage et formatage des résultats
         for key in sections:
             if sections[key]:
                 sections[key] = " ".join(sections[key][:5])  # Prend les 5 premières phrases
@@ -126,14 +122,20 @@ def analyze_doc():
     file_path = "temp.docx"
     file.save(file_path)
 
+    # Vérifier si le fichier a été correctement enregistré
+    if not os.path.exists(file_path):
+        return jsonify({"error": "Erreur lors de l'enregistrement du fichier"}), 500
+
+    # Extraction de la problématique et des sections
     problematic_text = extract_problematic(file_path)
     sections = extract_sections(file_path)
 
+    # Vérification des données extraites pour éviter les erreurs
     response = {
-        "problematique": problematic_text,
-        "methodologie": sections["Méthodologie"],
-        "resultats": sections["Résultats"],
-        "conclusion": sections["Conclusion"]
+        "problematique": problematic_text if problematic_text else "❌ Problématique non détectée.",
+        "methodologie": sections.get("Méthodologie", "❌ Section Méthodologie non trouvée."),
+        "resultats": sections.get("Résultats", "❌ Section Résultats non trouvée."),
+        "conclusion": sections.get("Conclusion", "❌ Section Conclusion non trouvée.")
     }
 
     return jsonify(response)
@@ -142,12 +144,7 @@ def analyze_doc():
 print("🚀 Routes enregistrées dans Flask :")
 for rule in app.url_map.iter_rules():
     print(rule)
-response = {
-    "problematique": problematic_text,
-    "methodologie": sections.get("Méthodologie", "❌ Section Méthodologie non trouvée."),
-    "resultats": sections.get("Résultats", "❌ Section Résultats non trouvée."),
-    "conclusion": sections.get("Conclusion", "❌ Section Conclusion non trouvée.")
-}
+
 # ✅ Flask propre et compatible avec Render
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # Port standard (5000 au lieu de 5001 pour Render)
