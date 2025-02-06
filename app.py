@@ -142,7 +142,12 @@ def analyze_doc():
 print("🚀 Routes enregistrées dans Flask :")
 for rule in app.url_map.iter_rules():
     print(rule)
-
+response = {
+    "problematique": problematic_text,
+    "methodologie": sections.get("Méthodologie", "❌ Section Méthodologie non trouvée."),
+    "resultats": sections.get("Résultats", "❌ Section Résultats non trouvée."),
+    "conclusion": sections.get("Conclusion", "❌ Section Conclusion non trouvée.")
+}
 # ✅ Flask propre et compatible avec Render
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # Port standard (5000 au lieu de 5001 pour Render)
