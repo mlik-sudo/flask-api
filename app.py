@@ -74,36 +74,40 @@ def detect_problematic():
 
 def extract_sections(doc_path):
     """
-    Extrait les sections importantes du document (Méthodologie, Résultats, Conclusion).
+    Extrait les sections importantes du document (Méthodologie, Résultats, Conclusion),
+    même si les titres ne sont pas strictement "Méthodologie", "Résultats" ou "Conclusion".
     """
     try:
         doc = docx.Document(doc_path)
         sections = {
-            "Méthodologie": None,
-            "Résultats": None,
-            "Conclusion": None
+            "Méthodologie": [],
+            "Résultats": [],
+            "Conclusion": []
         }
 
         current_section = None
-        section_text = {key: [] for key in sections.keys()}
 
         for para in doc.paragraphs:
-            text = para.text.strip()
+            text = para.text.strip().lower()
 
-            # Vérifie si le paragraphe marque une nouvelle section
-            if text.lower().startswith("méthodologie") or "méthode" in text.lower():
+            # Vérifier si le paragraphe marque une nouvelle section
+            if "méthodologie" in text or "méthode" in text:
                 current_section = "Méthodologie"
-            elif text.lower().startswith("résultats"):
+            elif "résultats" in text or "analyse" in text or "observations" in text:
                 current_section = "Résultats"
-            elif text.lower().startswith("conclusion"):
+            elif "conclusion" in text or "discussion" in text:
                 current_section = "Conclusion"
 
-            if current_section and text:
-                section_text[current_section].append(text)
+            # Ajouter le texte dans la bonne section
+            if current_section and len(text) > 20:  # Filtrer les lignes trop courtes
+                sections[current_section].append(para.text.strip())
 
+        # Nettoyage et formatage des résultats
         for key in sections:
-            if section_text[key]:
-                sections[key] = " ".join(section_text[key][:5])  # Prend les 5 premières phrases
+            if sections[key]:
+                sections[key] = " ".join(sections[key][:5])  # Prend les 5 premières phrases
+            else:
+                sections[key] = "❌ Section non trouvée dans le document."
 
         return sections
 
@@ -133,6 +137,11 @@ def analyze_doc():
     }
 
     return jsonify(response)
+
+# ✅ Vérifier que les routes sont bien chargées
+print("🚀 Routes enregistrées dans Flask :")
+for rule in app.url_map.iter_rules():
+    print(rule)
 
 # ✅ Flask propre et compatible avec Render
 if __name__ == "__main__":
